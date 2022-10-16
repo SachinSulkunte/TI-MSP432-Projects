@@ -1,9 +1,6 @@
-// Lab07_FSMmain.c
+// FSMmain.c
 // Runs on MSP432
-// Student version of FSM lab, FSM with 2 inputs and 2 outputs.
 // Rather than real sensors and motors, it uses LaunchPad I/O
-// Daniel and Jonathan Valvano
-// March 17, 2017
 
 /* This example accompanies the books
    "Embedded Systems: Introduction to the MSP432 Microcontroller",
@@ -42,12 +39,11 @@ The views and conclusions contained in the software and documentation are
 those of the authors and should not be interpreted as representing official
 policies, either expressed or implied, of the FreeBSD Project.
 */
-
 #include <stdint.h>
 #include "msp.h"
-#include "../inc/clock.h"
+#include "../inc/Clock.h"
 #include "../inc/LaunchPad.h"
-#include "../inc/Texas.h"
+#include "../inc/TExaS.h"
 
 /*(Left,Right) Motors, call LaunchPad_Output (positive logic)
 3   1,1     both motors, yellow means go straight
@@ -69,17 +65,26 @@ struct State {
 };
 typedef const struct State State_t;
 
-#define Center    &fsm[0]
-#define Left      &fsm[1]
-#define Right     &fsm[2]
-
-State_t fsm[3]={
-  {0x03, 500, { Right, Left,   Right,  Center }},  // Center
-  {0x02, 500, { Left,  Center, Right,  Center }},  // Left
-  {0x01, 500, { Right, Left,   Center, Center }}   // Right
+#define Center   &fsm[0]
+#define Left1    &fsm[1]
+#define Right1   &fsm[2]
+#define Left2    &fsm[3]
+#define Right2   &fsm[4]
+#define Straight &fsm[5]
+#define Stop     &fsm[6]
+#define Hleft    &fsm[7]
+#define Hright   &fsm[8]
+State_t fsm[9]={
+  {0x03, 500,  { Stop,     Left1,    Right1,   Center }},  // Center
+  {0x02, 500,  { Hright,   Left2,    Right1,   Center }},  // Left 1
+  {0x01, 500,  { Hleft,    Left1,    Right2,    Center }},   // Right 1
+  {0x03, 500,  { Hright,   Left1,    Right1,   Center }},  // Left 2
+  {0x03, 500,  { Hleft,    Left1,    Right1,    Center }},   // Right 2
+  {0x03, 5000, { Stop,     Left1,    Right1,   Center }},  // Straight
+  {0x00, 500,  { Stop,     Stop,     Stop,     Center }},  // Stop
+  {0x01, 5000, { Straight, Straight, Straight, Straight }},  // Hard Left
+  {0x02, 5000, { Straight, Straight, Straight, Straight }}   // Hard Right
 };
-
-
 State_t *Spt;  // pointer to the current state
 uint32_t Input;
 uint32_t Output;
@@ -92,7 +97,7 @@ uint32_t Output;
 int main(void){ uint32_t heart=0;
   Clock_Init48MHz();
   LaunchPad_Init();
-  //TExaS_Init(LOGICANALYZER);  // optional
+  TExaS_Init(LOGICANALYZER);  // optional
   Spt = Center;
   while(1){
     Output = Spt->out;            // set output from FSM
@@ -105,13 +110,3 @@ int main(void){ uint32_t heart=0;
     LaunchPad_LED(heart);         // optional, debugging heartbeat
   }
 }
-
-// Color    LED(s) Port2
-// dark     ---    0
-// red      R--    0x01
-// blue     --B    0x04
-// green    -G-    0x02
-// yellow   RG-    0x03
-// sky blue -GB    0x06
-// white    RGB    0x07
-// pink     R-B    0x05
