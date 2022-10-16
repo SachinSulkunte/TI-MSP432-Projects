@@ -1,8 +1,5 @@
-// Lab06_GPIOmain.c
+// GPIOmain.c
 // Runs on MSP432
-// Solution to GPIO lab
-// Daniel and Jonathan Valvano
-// May 21, 2017
 // Provide test main program for QTR-8RC reflectance sensor array
 // Pololu part number 961.
 
@@ -58,25 +55,13 @@ policies, either expressed or implied, of the FreeBSD Project.
 #include "msp.h"
 #include "..\inc\Reflectance.h"
 #include "..\inc\Clock.h"
-#include "..\inc\TExaS.h"
 
 uint8_t Data; // QTR-8RC
-// Test main for section 6.4.3
-int main2(void){
-  Clock_Init48MHz();
-  Reflectance_Init(); // your initialization
-  //TExaS_Init(LOGICANALYZER_P7);
-  while(1){
-    Data = Reflectance_Read(1000); // your measurement
-    Clock_Delay1ms(10);
-  }
-}
 
 int32_t Position; // 332 is right, and -332 is left of center
 int main(void){
   Clock_Init48MHz();
   Reflectance_Init();
-  //TExaS_Init(LOGICANALYZER_P7);
   while(1){
     Data = Reflectance_Read(1000);
     Position = Reflectance_Position(Data);
@@ -84,14 +69,14 @@ int main(void){
   }
 }
 
-int main3(void){ // main2(void){
+int testProgram(void){ 
     int32_t i;
   Clock_Init48MHz();
   Reflectance_Init();
   P4->SEL0 &= ~0x01;
   P4->SEL1 &= ~0x01;    //  P4.0 as GPIO
   P4->DIR |= 0x01;      //  make P4.0 out
-  //TExaS_Init(LOGICANALYZER_P7);
+
   while(1){
     P5->OUT |= 0x08;      // turn on 8 IR LEDs
     P7->DIR = 0xFF;       // make P7.7-P7.0 out
